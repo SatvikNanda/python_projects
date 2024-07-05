@@ -1,0 +1,15 @@
+Section 33:
+1. html basics: learnt about paragraph, heading, a href link, img link, navigation.
+
+2. learnt about flask, created a templates folder to store my html websites like demo, about.
+imported flask and render template to find the templates folder, made links /home and /about to navigate to them
+Figured out a way to display an image in the lask framework
+
+removed about and demo files from the templates folder since they were just a demo
+added home.html file into the template, home.html is the place where i'll store my weather forecast api
+
+modified main.py to access temperature for a given station and date.
+
+end of section 33
+
+Section 34:
