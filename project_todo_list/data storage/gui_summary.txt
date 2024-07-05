@@ -1,0 +1,36 @@
+Understanding the gui frontend code:
+
+The code uses 2 libraries- The functions to use get_todo and write_todo, and freeSimpleGUI for the user interface
+
+There is a label variable to write the heading
+There are 4 buttons, Add,Edit,Complete,Exit
+
+There is an input_box for writing the todo, the KEY IS TODO
+There is a list_box for showing the todos, the KEY IS TODOS 
+
+
+There is a window variable to display all the above information in a sequential manner
+
+case:Add
+a new variable is created to retrieve the existing list
+a new variable is made to store the new todo
+the new todo is added in the list and updated
+The window which contains the list is updated
+
+case:Edit
+a new variable is made to get the todo to edit, ['todos'][0] this ensures that not the whole list but only the selected element
+the new todo is taken from the input box 
+the index of the todo to edit is found and updated
+The window which contains the list is updated
+
+case:Complete
+the todo to Complete is selected from the list
+the list is called in a variable called todos 
+todo to complete is removed from the todo
+
+windows is updated to get the new list and to remove the item from input box as well
+
+case:todos
+occurs when a person clicks on any of the current todos, this copies the todo in the input box
+
+
