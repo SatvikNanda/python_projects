@@ -3,14 +3,15 @@ from send_email import send_email
 
 # Extracting pre-requisites
 topic = "tesla"
-api_key = "c6c55f26caeb4a76aecc6c4c29818759"
-url = f"https://newsapi.org/v2/everything?q={topic}&from=2024-06-12&sortBy=publishedAt&apiKey=c6c55f26caeb4a76aecc6c4c29818759&language=en"
+api_key = "56daefbaafbc4640b069bd6b695852f9" #sample apikey, hence not hidden
+url = f"https://newsapi.org/v2/everything?q=tesla&from=2024-06-25&sortBy=publishedAt&apiKey=56daefbaafbc4640b069bd6b695852f9&language=en"
 
 # Make request
-request = requests.get(url)
+response = requests.get(url)
 
 # Get a dictionary of data
-content = request.json()
+content = response.json()
+
 
 # Access the news title and description
 body = ""
