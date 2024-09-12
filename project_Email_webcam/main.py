@@ -1,6 +1,9 @@
 import cv2
 import time
 from emailing import send_email
+import glob
+import os
+from threading import Thread
 
 
 
@@ -10,10 +13,17 @@ time.sleep(1) #wait for 1 second before starting further action
 first_frame = None
 
 status_list = []
+count = 1
+
+def clean_folder():
+    images = glob.glob("project_Email_webcam/images/*.png")
+    for image in images:
+        os.remove(image)
 
 while True:
     status = 0
     check, frame = video.read()
+    
 
     #pre-processing of the frames
     gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)#convert frame to grayscale to reduce the data, because by default we are using the blue, green and red frames.
@@ -41,14 +51,31 @@ while True:
         rectangle = cv2.rectangle(frame, (x,y), (x+w, y+h), (0,255,0), 3)#create a rectangle around the frame
         if rectangle.any:
             status = 1
+            cv2.imwrite(f"project_Email_webcam/images/{count}.png", frame)
+            count = count+1
+            all_images = glob.glob("project_Email_webcam/images/*.png")
+            index = int(len(all_images)/2)
+            resultant_image = all_images[index]
     
     status_list.append(status)
     status_list = status_list[-2:]
 
+
     print(status_list)
     if status_list[0] == 1 and status_list[1] == 0:
-        send_email()
-        break
+        email_thread = Thread(target=send_email, args=(resultant_image, ))
+        email_thread.daemon = True
+
+        clean_thread = Thread(target=clean_folder)
+        clean_thread.daemon = True
+        
+        email_thread.start()
+        
+        print("Email sent successfully, stopping code now.")
+
+        
+        
+        
     
 
     cv2.imshow("video", frame)
@@ -61,3 +88,4 @@ while True:
         break
 
 video.release() #important to free up the resources and stop capturing the video
+clean_thread.start()
