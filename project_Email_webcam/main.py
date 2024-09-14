@@ -19,6 +19,7 @@ def clean_folder():
     images = glob.glob("project_Email_webcam/images/*.png")
     for image in images:
         os.remove(image)
+    print("images cleaned successfully")
 
 while True:
     status = 0
@@ -71,7 +72,7 @@ while True:
         
         email_thread.start()
         
-        print("Email sent successfully, stopping code now.")
+        print("Code completed, remove immages now")
 
         
         
@@ -87,5 +88,5 @@ while True:
     if key == ord("q"):
         break
 
-video.release() #important to free up the resources and stop capturing the video
 clean_thread.start()
+video.release() #important to free up the resources and stop capturing the video

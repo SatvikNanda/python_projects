@@ -1,10 +1,14 @@
 import smtplib
 from email.message import EmailMessage
 import imghdr
+from dotenv import load_dotenv
+import os
 
-sender = "satvik.nanda@gmail.com"
-password = "jvxy rfwx uudi rhzk" #purpose: to send the email from the sender account
-reciever = "satvik.nanda@gmail.com"
+load_dotenv()
+
+sender = os.getenv("SENDER")
+password = os.getenv("PASSWORD") #purpose: to send the email from the sender account
+reciever = os.getenv("RECIEVER")
 
 
 def send_email(image_path):
@@ -23,6 +27,7 @@ def send_email(image_path):
     gmail.login(sender, password)
     gmail.sendmail(sender, reciever, email_message.as_string())
     gmail.quit()
+    print("Email sent successfully")
     
 
 if __name__ == "__main__":
