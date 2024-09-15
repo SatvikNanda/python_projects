@@ -2,8 +2,14 @@ import requests
 import selectorlib
 import smtplib, ssl
 import os
+import time
+import sqlite3
 
 URL = "https://programmer100.pythonanywhere.com/tours/"
+
+
+connection = sqlite3.connect("project_music_webScraper/data.db")
+
 
 def scrape(url):
     """Scrape the page source from URL"""
@@ -34,25 +40,40 @@ def send_email(message):
     print("Email was sent successfully!")
 
 def store(extracted):
-    with open("project_music_webScraper/data.txt", "a") as file:
-        file.write(extracted + "\n")
+    row = extracted.split(",")
+    row = [item.strip() for item in row]
+
+    cursor = connection.cursor()
+    cursor.execute("INSERT INTO events VALUES(?,?,?)", row)
+    connection.commit()
 
 
-def read():
-    with open("project_music_webScraper/data.txt", "r") as file:
-        return file.read()
+def read(extracted):
+    row = extracted.split(",")
+    row = [item.strip() for item in row]
+    band_name, city_name, date = row
+
+    cursor = connection.cursor()
+
+    #query data
+    cursor.execute("SELECT * FROM events WHERE band_name=? AND city_name=? AND date=?", (band_name,city_name,date))
+    rows = cursor.fetchall()
+    print(rows)
+
+    return rows
 
 if __name__ == "__main__":
-    scraped = scrape(URL)
-    extracted = extract(scraped)
-    
-    content = read()
+    while True:
+        scraped = scrape(URL)
+        extracted = extract(scraped)
 
-    print(extracted)
+        print(extracted)
 
-    if extracted != "No upcoming tours":
-        if extracted not in content:
-            store(extracted)
-            send_email(message="Hey, new event was found!")
+        if extracted != "No upcoming tours":
+            row = read(extracted)
+            if not row:
+                store(extracted)
+                send_email(message="Hey, new event was found!")
+        time.sleep(2)
 
     
