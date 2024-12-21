@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QApplication, QVBoxLayout, QLabel, QWidget, QGridLayout, QLineEdit, QPushButton, QMainWindow, QTableWidget, QTableWidgetItem, QDialog, QVBoxLayout, QComboBox, QToolBar
+from PyQt6.QtWidgets import QApplication, QVBoxLayout, QLabel, QGridLayout, QLineEdit, QPushButton, QMainWindow, QTableWidget, QTableWidgetItem, QDialog, QVBoxLayout, QComboBox, QToolBar, QStatusBar, QMessageBox
 import sys
 from PyQt6.QtGui import QAction, QIcon
 import sqlite3
@@ -11,6 +11,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Student Management System")
+        self.setMinimumSize(800, 600)
 
         file_menu_item = self.menuBar().addMenu("&File")
         help_menu_item = self.menuBar().addMenu("&Help")
@@ -31,6 +32,8 @@ class MainWindow(QMainWindow):
         about_action = QAction("About", self)
         help_menu_item.addAction(about_action)
 
+        about_action.triggered.connect(self.about)
+
 
         self.table = QTableWidget()
         self.table.setColumnCount(4)
@@ -45,6 +48,28 @@ class MainWindow(QMainWindow):
 
         tool_bar.addAction(add_student_action)
         tool_bar.addAction(search_action)
+
+        # Create statusbar and statusbar elements
+        self.status_bar = QStatusBar()
+        self.setStatusBar(self.status_bar)
+        #Detect a cell click
+        self.table.cellClicked.connect(self.cell_clicked)
+
+    def cell_clicked(self):
+        edit_button = QPushButton("Edit Record")
+        edit_button.clicked.connect(self.edit)
+
+        delete_button = QPushButton("Delete Record")
+        delete_button.clicked.connect(self.delete)
+
+        children = self.findChildren(QPushButton) # so that buttons do not keep generating
+        if children:
+            for child in children:
+                self.status_bar.removeWidget(child)
+
+        self.status_bar.addWidget(edit_button)
+        self.status_bar.addWidget(delete_button)
+
 
     def load_data(self):
         connection = sqlite3.connect("project_student_management/database.db")
@@ -64,6 +89,126 @@ class MainWindow(QMainWindow):
     def search(self):
         dialog = SearchDialog()
         dialog.exec()
+    def edit(self):
+        dialog = EditDialog()
+        dialog.exec()
+    def delete(self):
+        dialog = DeleteDialog()
+        dialog.exec()
+    def about(self):
+        dialog = AboutDialog()
+        dialog.exec()
+
+
+class AboutDialog(QMessageBox):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("About")
+        content = """
+        The creator of this Application is Satvik Nanda, feel free to modify and use this app.
+        """
+        self.setText(content)
+
+
+class EditDialog(QDialog):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Update Student Data")
+        self.setFixedHeight(500)
+        self.setFixedWidth(500) #this is a good practice for pop-up windows
+
+        layout = QVBoxLayout()
+
+        index = main_window.table.currentRow()
+        #get id for student
+        self.student_id = main_window.table.item(index, 0).text()
+
+        student_name = main_window.table.item(index, 1).text() #index row and 1st col
+        
+
+        # add studentname widget
+        self.student_name = QLineEdit(student_name)
+        self.student_name.setPlaceholderText("Name")
+        layout.addWidget(self.student_name)
+
+        # add combo box of courses
+        course_name = main_window.table.item(index, 2).text() #now second col
+        self.course_name = QComboBox()
+        courses = ["Biology", "Maths", "Physics", "Astronomy"]
+        self.course_name.addItems(courses)
+
+        self.course_name.setCurrentText(course_name)
+        layout.addWidget(self.course_name)
+
+        #Add mobile widget
+        mobile = main_window.table.item(index, 3).text()
+        self.mobile = QLineEdit(mobile)
+        self.mobile.setPlaceholderText("Mobile")
+        layout.addWidget(self.mobile)
+
+        #add submit button
+        button = QPushButton("Update?")
+        button.clicked.connect(self.update_student)
+        layout.addWidget(button)
+
+
+        self.setLayout(layout)
+
+    def update_student(self):
+        connection = sqlite3.connect("project_student_management/database.db")
+        cursor = connection.cursor()
+        cursor.execute("UPDATE students SET name = ?, course = ?, mobile = ? WHERE id = ?",
+                        (self.student_name.text(), 
+                         self.course_name.itemText(self.course_name.currentIndex()),
+                         self.mobile.text(), 
+                         self.student_id)
+                      )
+
+        connection.commit()
+        cursor.close()
+        connection.close()
+        #Refresh the table
+        main_window.load_data()
+
+class DeleteDialog(QDialog):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Delete Student Data")
+
+        layout = QGridLayout()
+        confirmation = QLabel("Are you sure about deleting?")
+        yes = QPushButton("yes")
+        no = QPushButton("no")
+
+        layout.addWidget(confirmation, 0, 0, 1, 2)#row 0, col 0, expanding 1 row, expanding 2 col
+        layout.addWidget(yes, 1, 0)
+        layout.addWidget(no, 1, 1)
+        self.setLayout(layout)
+
+        yes.clicked.connect(self.delete_student)
+
+    
+    def delete_student(self):
+        index = main_window.table.currentRow()
+        #get id for student
+        student_id = main_window.table.item(index, 0).text()
+
+        connection = sqlite3.connect("project_student_management/database.db")
+        cursor = connection.cursor()
+        cursor.execute("DELETE from students WHERE id = ?", (student_id, ))
+        connection.commit()
+        cursor.close()
+        connection.close()
+        #Refresh the table
+        main_window.load_data()
+
+        self.close()
+
+        confirmation_widget = QMessageBox()
+        confirmation_widget.setWindowTitle("Success")
+        confirmation_widget.setText("The record was deleted successfully!")
+
+        confirmation_widget.exec()
 
 
 
