@@ -4,9 +4,16 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By 
+import os
 # To avoid web browser option pop-up
 chrome_options = Options()
 chrome_options.add_argument("--disable-search-engine-choice-screen")
+
+# Adding a preference to download file in this project (default download location is downloads folder, we are changing that)
+download_path = os.getcwd()
+prefs = {'download.default_directory': download_path}
+
+chrome_options.add_experimental_option('prefs', prefs)
 
 # A service instance
 service = Service("project_WebAutomation/chromedriver-win64/chromedriver.exe")
@@ -58,6 +65,17 @@ currentAddress_field.send_keys("street 121, xyz road, New York")
 permanentAddress_field.send_keys("street 121, xyz road, New York")
 
 driver.execute_script("arguments[0].click()", submit_button)
+
+
+# Next Section - Download
+"""
+Locate the 'download and upload' section and the 'download' button
+"""
+upload_download = driver.find_element(By.ID, 'item-7')
+driver.execute_script("arguments[0].click()", upload_download)
+
+download_button = driver.find_element(By.ID, 'downloadButton')
+driver.execute_script("arguments[0].click()", download_button)
 
 
 
